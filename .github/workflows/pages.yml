@@ -3,25 +3,29 @@ name: Deploy Jekyll site to GitHub Pages
 on:
   push:
     branches:
-      - main # Or "master" if your default branch is master
+      - main  # Change to master if applicable
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout source
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.2 # Match the Ruby version used locally, adjust if needed
+          ruby-version: '3.2'  # Adjust as needed
           bundler-cache: true
 
       - name: Install dependencies
@@ -30,7 +34,7 @@ jobs:
       - name: Build the site
         run: JEKYLL_ENV=production bundle exec jekyll build
 
-      - name: Upload artifact
+      - name: Upload build output
         uses: actions/upload-pages-artifact@v2
         with:
           path: ./_site
