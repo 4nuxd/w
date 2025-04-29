@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQLMap TryHackMe WriteUp - Анураг Дев</title>
+    <style>
+        body {
+            max-width: 800px;
+            margin: 0 auto;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            color: #333;
+        }
+        .post-meta {
+            color: #666;
+            font-size: 0.9em;
+        }
+        pre {
+            background-color: #f6f8fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        code {
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .image-placeholder {
+            background-color: #eee;
+            padding: 20px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .follow-button {
+            background-color: #000;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+      .blog-image {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        margin: 20px 0;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .image-container {
+        text-align: center;
+        margin: 25px 0;
+    }
+
+    .image-caption {
+        color: #666;
+        font-style: italic;
+        font-size: 0.9em;
+        margin-top: 8px;
+    }
+    .qa-section {
+        margin: 40px 0;
+        border-left: 4px solid #4CAF50;
+        padding-left: 20px;
+    }
+
+    .qa-item {
+        margin: 25px 0;
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .question {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 10px;
+    }
+
+    .correct-answer {
+        color: #27ae60;
+        padding: 8px;
+        background: #e8f5e9;
+        border-radius: 4px;
+        display: inline-block;
+        margin: 5px 0;
+    }
+
+    .hint {
+        color: #7f8c8d;
+        font-style: italic;
+        margin-top: 8px;
+        padding: 6px;
+        background: #fcf3cf;
+        border-radius: 4px;
+        display: inline-block;
+    }
+
+    .correct-answer::before {
+        content: "✔ ";
+    }
+    </style>
+</head>
+<body>
+    <h1>SQLMap — TryHackMe WriteUp</h1>
+    
+    <div class="post-meta">
+        <div class="author-info">
+            <img src="https://4nuxd.me/assets/images/my-avatar.png" alt="Wilklins Nyatteng" width="40" style="border-radius: 50%;vertical-align: middle;">
+            <span style="margin-left: 10px;">Анураг Дев</span>
+            <a href="t.me/piratexd" class="follow-button">Follow</a>
+        </div>
+        <div class="post-date" style="margin-top: 10px;">
+            Feb 20, 2025 · 4 min read
+        </div>
+    </div>
+
+    <div class="featured-image">
+    <div class="image-container">
+        <img src="/writeups/images/image.png" alt="SQLMap Demonstration" class="blog-image">
+        <p class="image-caption">SQLMap workflow demonstration</p>
+    </div>
+</div>
+
+    <article>
+        <h2>Learn about and use Sqlmap to exploit the web application</h2>
+        
+        <p>Sqlmap is an open source penetration testing tool developed by Bernardo Damele Assumpcao Guimaraes and Miroslav Stampar that automates the process of detecting and exploiting SQL injection flaws and taking over database servers...</p>
+
+        <h3>Initial Reconnaissance</h3>
+        <p>Started by running the default Nmap scan:</p>
+        <pre><code>nmap -sC -sV [TARGET_IP]</code></pre>
+        <div class="image-container">
+        <img src="/writeups/images/1_44gR1pPCmHj0Z9TLOY4h1A.png" alt="Nmap Scan Results" class="blog-image">
+        <p class="image-caption">Nmap Scan Results</p>
+        </div>
+
+        <h3>Web Application Analysis</h3>
+        <p>Accessed the website and found out this:</p>
+        <div class="image-container">
+        <img src="/writeups/images/1_hQD9yyJC1RBVoOYZxtIt_g.png" alt="Web Application Analysis" class="blog-image">
+        <p class="image-caption">Web Application Analysis</p>
+        </div>
+
+        <h3>Directory Enumeration</h3>
+        <p>Ran Gobuster to find available directories:</p>
+        <pre><code>gobuster dir -u http://[TARGET_IP]/ -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt</code></pre>
+        <div class="image-container">
+        <img src="/writeups/images/1_W_45-5tCkvPP_8DtvRaSug.png" alt="Directory Enumeration" class="blog-image">
+        <p class="image-caption">Directory Enumeration</p>
+        </div>
+
+        <h3>Getting Parameters</h3>
+        <p>It had a login page and registration</p>
+        <div class="image-container">
+        <img src="/writeups/images/1_ajBjp9VfEGb-iKZn3d5mTQ.png" alt="Getting Parameters" class="blog-image">
+        </div>
+        <p>I click on the login and then use Burpsuite to intercept the login page and save it to a TXT file</p>
+        <div class="image-container">
+        <img src="/writeups/images/1_r0uh1MABWoLYj-lBzCXmTQ.png" alt="Getting Parameters" class="blog-image">
+        <p class="image-caption">Getting Parameters</p>
+        </div>
+
+        <h3>SQL Injection Exploitation</h3>
+        <p>Intercepted login request with BurpSuite and used SQLMap:</p>
+        <pre><code>sqlmap -r login_request.txt --dbs</code></pre>
+        <p>Database enumeration results:</p>
+        <div class="image-container">
+        <img src="/writeups/images/1_EW05Ww5JElR-3ZSqIfWfvw.png" alt="Getting DB" class="blog-image">
+        </div>
+
+        <p>Now that we know the name of the Database we look for tables available in the DB</p>
+        <div class="image-container">
+        <img src="/writeups/images/1_4NDEQwAjMIyDVvbbvX_LrQ.png" alt="Getting Tables" class="blog-image">
+        </div>
+
+        <p>Now that we are interested in the flag table. We run the dump command to find its details</p>
+        <div class="image-container">
+        <img src="/writeups/images/1_rfHXnApJd0GdAmzasmdH4w.png" alt="DB Dump" class="blog-image">
+        </div>
+
+        <article>
+    <h2>Challenge Solutions</h2>
+    <div class="qa-section">
+        <div class="qa-item">
+            <p class="question">❓ What is the name of the interesting directory?</p>
+            <div class="correct-answer">
+                ✅ <code>blood</code>
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <p class="question">❓ Who is the current db user?</p>
+            <div class="correct-answer">
+                ✅ <code>root</code>
+            </div>
+            <div class="hint">
+                💡 Hint: Check database privileges
+            </div>
+        </div>
+
+        <div class="qa-item">
+            <p class="question">❓ What is the final flag?</p>
+            <div class="correct-answer">
+                ✅ <code>thm{sqlm@p_is_L0ve}</code>
+            </div>
+        </div>
+    </div>
+</article>
+
+        <h2>Conclusion</h2>
+        <p>Mitigating against SQL injection attacks requires:</p>
+        <ol>
+            <li>Implementing Input Validation and Parameterized Queries</li>
+            <li>Applying Principle of Least Privilege</li>
+            <li>Regularly Updating Database Software</li>
+            <li>Employing Web Application Firewalls</li>
+            <li>Conducting Regular Security Audits</li>
+        </ol>
+    </article>
+
+    <div class="engagement" style="margin-top: 40px; text-align: center;">
+        <p>👏 If you found this helpful, please consider clapping and <span class="follow-button">following</span> for more cybersecurity content!</p>
+    </div>
+</body>
+</html>
